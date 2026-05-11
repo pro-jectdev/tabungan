@@ -4,17 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard Tabungan</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; }
-    .card-base { background: white; border: 1px solid #e2e8f0; border-radius: 24px; }
-    .summary-area { max-height: 600px; overflow-y: auto; }
-    .summary-area::-webkit-scrollbar { width: 6px; }
-    .summary-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    .card-base {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+    }
+
+    .summary-area {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .summary-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .summary-area::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
   </style>
 </head>
+
 <body class="p-4 md:p-8">
 
   <div class="max-w-5xl mx-auto space-y-6">
@@ -24,100 +49,308 @@
         <span class="inline-block">Dashboard</span>
         <span class="inline-block text-emerald-600">Tabungan</span>
       </h1>
-      <p class="text-base md:text-xl text-slate-500 mt-4 italic font-medium">Assalamualaikum Malang</p>
+
+      <p class="text-base md:text-xl text-slate-500 mt-4 italic font-medium">
+        Assalamualaikum Malang
+      </p>
+
+      <p id="lastUpdate" class="text-xs text-slate-400 mt-3">
+        Menunggu update...
+      </p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
       <div class="bg-emerald-600 rounded-[24px] p-6 text-white shadow-md">
-        <p class="text-xs uppercase tracking-widest opacity-80 font-bold">Total Tabungan</p>
-        <h2 id="totalTabungan" class="text-4xl font-extrabold mt-3 text-white">Rp 0</h2>
+        <p class="text-xs uppercase tracking-widest opacity-80 font-bold">
+          Total Tabungan
+        </p>
+
+        <h2 id="totalTabungan" class="text-4xl font-extrabold mt-3 text-white">
+          Rp 0
+        </h2>
       </div>
+
       <div class="card-base p-6 shadow-sm">
-        <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">Jumlah Transaksi</p>
-        <h2 id="countSetoran" class="text-4xl font-extrabold mt-3">0</h2>
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">
+          Jumlah Transaksi
+        </p>
+
+        <h2 id="countSetoran" class="text-4xl font-extrabold mt-3">
+          0
+        </h2>
       </div>
     </div>
 
     <div class="card-base overflow-hidden shadow-sm">
+
       <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
-        <h2 class="font-bold text-slate-700 text-xs uppercase tracking-widest">Ringkasan Mingguan</h2>
-        <span class="text-[10px] bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full font-bold">Terupdate</span>
+        <h2 class="font-bold text-slate-700 text-xs uppercase tracking-widest">
+          Ringkasan Mingguan
+        </h2>
+
+        <span class="text-[10px] bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full font-bold">
+          Terupdate
+        </span>
       </div>
+
       <div id="ringkasanNama" class="summary-area p-5 space-y-6">
-        <div class="text-center py-8 text-slate-400 italic text-sm">Menghubungkan ke server Google...</div>
+        <div class="text-center py-8 text-slate-400 italic text-sm animate-pulse">
+          Menghubungkan ke server Google...
+        </div>
       </div>
+
     </div>
   </div>
 
   <script>
     /**
-     * PENTING: Ganti URL di bawah ini dengan URL Web App Anda
-     * Contoh: https://script.google.com/macros/s/AKfycbxZisXO4MDj4lmydaAwaLmnbhWuEKDB-tqzMhM9xGbZAXZ8WNC4Z3JM0qN3vw53D5dF3A/exec
+     * URL Google Apps Script
      */
     const URL_API = "https://script.google.com/macros/s/AKfycbxeDlfdcAgps5xGGIKR6t4ByANwmNL6gd7kZ0O0WFYQ-ssfTOI_UPhcVlwZp4uryBQZ6Q/exec";
 
-    function formatIDR(angka) {
+    /**
+     * Secret sederhana internal keluarga
+     */
+    const SECRET_KEY = "keluarga123";
+
+    /**
+     * Format Rupiah
+     */
+    function formatIDR(angka = 0) {
       return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
-      }).format(angka);
+      }).format(Number(angka));
     }
 
-    function muatData() {
-      fetch(URL_API)
-        .then(response => response.json())
-        .then(data => {
-          // 1. Update Stats & Total
-          let total = 0;
-          if (data.riwayat) {
-            data.riwayat.forEach(item => {
-              total += Number(item.jumlah);
-            });
-            document.getElementById('totalTabungan').innerText = formatIDR(total);
-            document.getElementById('countSetoran').innerText = data.riwayat.length;
-          }
+    /**
+     * Escape HTML untuk keamanan ringan
+     */
+    function escapeHTML(str = '') {
+      return String(str).replace(/[&<>"']/g, function (m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        })[m];
+      });
+    }
 
-          // 2. Update Ringkasan Mingguan
-          let html = "";
-          if (data.ringkasan && data.ringkasan.length > 0) {
-            data.ringkasan.forEach(group => {
-              html += `
-                <div class="card-base p-5 shadow-sm border border-slate-100 bg-white">
-                  <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                      ${group.minggu}
-                    </h3>
-                    <span class="text-[10px] text-slate-400 font-bold">
-                      ${group.detail.length} ANGGOTA
-                    </span>
-                  </div>
-                  <div class="space-y-3">
-                    ${group.detail.map(item => `
-                      <div class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-3">
-                        <p class="text-sm font-bold uppercase text-slate-700">${item.nama}</p>
-                        <p class="text-emerald-700 font-black">${formatIDR(item.total)}</p>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>`;
-            });
-          } else {
-            html = `<p class="text-center py-10 text-slate-400 italic">Belum ada data mingguan.</p>`;
+    /**
+     * Loading state
+     */
+    function tampilkanLoading() {
+      document.getElementById('ringkasanNama').innerHTML = `
+        <div class="text-center py-10 text-slate-400 animate-pulse italic">
+          Memuat data tabungan...
+        </div>
+      `;
+    }
+
+    /**
+     * Error state
+     */
+    function tampilkanError(pesan = "Terjadi kesalahan") {
+      document.getElementById('ringkasanNama').innerHTML = `
+        <div class="text-center py-10">
+          <p class="text-red-500 font-bold">
+            Data tidak dapat dimuat
+          </p>
+
+          <p class="text-xs text-slate-400 mt-2">
+            ${escapeHTML(pesan)}
+          </p>
+        </div>
+      `;
+    }
+
+    /**
+     * Ambil data dari Apps Script
+     */
+    async function ambilData() {
+
+      const controller = new AbortController();
+
+      const timeout = setTimeout(() => {
+        controller.abort();
+      }, 10000);
+
+      try {
+
+        const response = await fetch(
+          `${URL_API}?key=${SECRET_KEY}`,
+          {
+            method: 'GET',
+            signal: controller.signal
           }
-          document.getElementById('ringkasanNama').innerHTML = html;
-        })
-        .catch(err => {
-          console.error(err);
-          document.getElementById('ringkasanNama').innerHTML = `
-            <div class="text-center py-10">
-              <p class="text-red-500 font-bold">Gagal mengambil data</p>
-              <p class="text-xs text-slate-400 mt-2">Pastikan setelan Deploy di Apps Script adalah "Anyone"</p>
-            </div>`;
+        );
+
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          throw new Error("Server gagal merespon");
+        }
+
+        return await response.json();
+
+      } catch (err) {
+
+        if (err.name === 'AbortError') {
+          throw new Error("Koneksi timeout");
+        }
+
+        throw err;
+      }
+    }
+
+    /**
+     * Render statistik
+     */
+    function renderStatistik(data) {
+
+      let total = 0;
+
+      if (Array.isArray(data.riwayat)) {
+
+        data.riwayat.forEach(item => {
+          total += Number(item.jumlah || 0);
         });
+
+        document.getElementById('totalTabungan').innerText =
+          formatIDR(total);
+
+        document.getElementById('countSetoran').innerText =
+          data.riwayat.length;
+      }
     }
 
-    window.onload = muatData;
+    /**
+     * Render ringkasan mingguan
+     */
+    function renderRingkasan(data) {
+
+      let html = "";
+
+      if (
+        Array.isArray(data.ringkasan) &&
+        data.ringkasan.length > 0
+      ) {
+
+        data.ringkasan.forEach(group => {
+
+          const detail = Array.isArray(group.detail)
+            ? group.detail
+            : [];
+
+          html += `
+            <div class="card-base p-5 shadow-sm border border-slate-100 bg-white">
+
+              <div class="flex justify-between items-center mb-4">
+
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                  ${escapeHTML(group.minggu || '-')}
+                </h3>
+
+                <span class="text-[10px] text-slate-400 font-bold">
+                  ${detail.length} ANGGOTA
+                </span>
+
+              </div>
+
+              <div class="space-y-3">
+
+                ${detail.map(item => `
+
+                  <div class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-3">
+
+                    <p class="text-sm font-bold uppercase text-slate-700">
+                      ${escapeHTML(item.nama || '-')}
+                    </p>
+
+                    <p class="text-emerald-700 font-black">
+                      ${formatIDR(item.total || 0)}
+                    </p>
+
+                  </div>
+
+                `).join('')}
+
+              </div>
+
+            </div>
+          `;
+        });
+
+      } else {
+
+        html = `
+          <p class="text-center py-10 text-slate-400 italic">
+            Belum ada data mingguan.
+          </p>
+        `;
+      }
+
+      document.getElementById('ringkasanNama').innerHTML = html;
+    }
+
+    /**
+     * Update waktu terakhir
+     */
+    function updateWaktu() {
+
+      const sekarang = new Date();
+
+      const waktu = sekarang.toLocaleString('id-ID', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      });
+
+      document.getElementById('lastUpdate').innerText =
+        `Update terakhir: ${waktu}`;
+    }
+
+    /**
+     * Main function
+     */
+    async function muatData() {
+
+      tampilkanLoading();
+
+      try {
+
+        const data = await ambilData();
+
+        renderStatistik(data);
+
+        renderRingkasan(data);
+
+        updateWaktu();
+
+      } catch (err) {
+
+        console.error(err);
+
+        tampilkanError(err.message);
+      }
+    }
+
+    /**
+     * Load pertama
+     */
+    window.onload = () => {
+
+      muatData();
+
+      /**
+       * Auto refresh tiap 1 menit
+       */
+      setInterval(muatData, 60000);
+    };
   </script>
+
 </body>
 </html>
