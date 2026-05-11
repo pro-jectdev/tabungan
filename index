@@ -54,7 +54,7 @@
      * PENTING: Ganti URL di bawah ini dengan URL Web App Anda
      * Contoh: https://script.google.com/macros/s/AKfycbxZisXO4MDj4lmydaAwaLmnbhWuEKDB-tqzMhM9xGbZAXZ8WNC4Z3JM0qN3vw53D5dF3A/exec
      */
-    const URL_API = "URL_WEB_APP_GOOGLE_SCRIPT_ANDA";
+    const URL_API = "https://script.google.com/macros/s/AKfycbxZisXO4MDj4lmydaAwaLmnbhWuEKDB-tqzMhM9xGbZAXZ8WNC4Z3JM0qN3vw53D5dF3A/exec";
 
     function formatIDR(angka) {
       return new Intl.NumberFormat('id-ID', {
