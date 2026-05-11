@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Tabungan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; }
+    .card-base { background: white; border: 1px solid #e2e8f0; border-radius: 24px; }
+    .summary-area { max-height: 600px; overflow-y: auto; }
+    .summary-area::-webkit-scrollbar { width: 6px; }
+    .summary-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+  <div class="max-w-5xl mx-auto space-y-6">
+
+    <div class="card-base p-8 md:p-14 shadow-xl bg-gradient-to-r from-white to-emerald-50">
+      <h1 class="text-[28px] sm:text-[42px] md:text-6xl font-extrabold text-slate-900 leading-tight">
+        <span class="inline-block">Dashboard</span>
+        <span class="inline-block text-emerald-600">Tabungan</span>
+      </h1>
+      <p class="text-base md:text-xl text-slate-500 mt-4 italic font-medium">Assalamualaikum Malang</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-emerald-600 rounded-[24px] p-6 text-white shadow-md">
+        <p class="text-xs uppercase tracking-widest opacity-80 font-bold">Total Tabungan</p>
+        <h2 id="totalTabungan" class="text-4xl font-extrabold mt-3 text-white">Rp 0</h2>
+      </div>
+      <div class="card-base p-6 shadow-sm">
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">Jumlah Transaksi</p>
+        <h2 id="countSetoran" class="text-4xl font-extrabold mt-3">0</h2>
+      </div>
+    </div>
+
+    <div class="card-base overflow-hidden shadow-sm">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+        <h2 class="font-bold text-slate-700 text-xs uppercase tracking-widest">Ringkasan Mingguan</h2>
+        <span class="text-[10px] bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full font-bold">Terupdate</span>
+      </div>
+      <div id="ringkasanNama" class="summary-area p-5 space-y-6">
+        <div class="text-center py-8 text-slate-400 italic text-sm">Menghubungkan ke server Google...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * PENTING: Ganti URL di bawah ini dengan URL Web App Anda
+     * Contoh: https://script.google.com/macros/s/AKfycbxZisXO4MDj4lmydaAwaLmnbhWuEKDB-tqzMhM9xGbZAXZ8WNC4Z3JM0qN3vw53D5dF3A/exec
+     */
+    const URL_API = "URL_WEB_APP_GOOGLE_SCRIPT_ANDA";
+
+    function formatIDR(angka) {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      }).format(angka);
+    }
+
+    function muatData() {
+      fetch(URL_API)
+        .then(response => response.json())
+        .then(data => {
+          // 1. Update Stats & Total
+          let total = 0;
+          if (data.riwayat) {
+            data.riwayat.forEach(item => {
+              total += Number(item.jumlah);
+            });
+            document.getElementById('totalTabungan').innerText = formatIDR(total);
+            document.getElementById('countSetoran').innerText = data.riwayat.length;
+          }
+
+          // 2. Update Ringkasan Mingguan
+          let html = "";
+          if (data.ringkasan && data.ringkasan.length > 0) {
+            data.ringkasan.forEach(group => {
+              html += `
+                <div class="card-base p-5 shadow-sm border border-slate-100 bg-white">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                      ${group.minggu}
+                    </h3>
+                    <span class="text-[10px] text-slate-400 font-bold">
+                      ${group.detail.length} ANGGOTA
+                    </span>
+                  </div>
+                  <div class="space-y-3">
+                    ${group.detail.map(item => `
+                      <div class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-3">
+                        <p class="text-sm font-bold uppercase text-slate-700">${item.nama}</p>
+                        <p class="text-emerald-700 font-black">${formatIDR(item.total)}</p>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>`;
+            });
+          } else {
+            html = `<p class="text-center py-10 text-slate-400 italic">Belum ada data mingguan.</p>`;
+          }
+          document.getElementById('ringkasanNama').innerHTML = html;
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('ringkasanNama').innerHTML = `
+            <div class="text-center py-10">
+              <p class="text-red-500 font-bold">Gagal mengambil data</p>
+              <p class="text-xs text-slate-400 mt-2">Pastikan setelan Deploy di Apps Script adalah "Anyone"</p>
+            </div>`;
+        });
+    }
+
+    window.onload = muatData;
+  </script>
+</body>
+</html>
