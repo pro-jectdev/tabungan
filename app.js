@@ -9,15 +9,12 @@
 const URL_API = "https://script.google.com/macros/s/AKfycbxeDlfdcAgps5xGGIKR6t4ByANwmNL6gd7kZ0O0WFYQ-ssfTOI_UPhcVlwZp4uryBQZ6Q/exec";
 const SECRET_KEY = "keluarga123";
 const STORAGE_THEME_KEY = 'savings-dashboard-theme';
-const STORAGE_GOAL_KEY = 'savings-dashboard-goal';
-const DEFAULT_GOAL = 20000000; // Default: Rp 20 Juta
 
 // --- STATE MANAGEMENT ---
 let appData = {
   riwayat: [],
   ringkasan: [],
-  totalTabungan: 0,
-  targetGoal: Number(localStorage.getItem(STORAGE_GOAL_KEY)) || DEFAULT_GOAL
+  totalTabungan: 0
 };
 
 // Chart.js Instances
@@ -85,7 +82,6 @@ function getChartColors() {
 // --- UI THEME TOGGLE ---
 function initTheme() {
   const btnToggleTheme = document.getElementById('btnToggleTheme');
-  const sunIcon = document.getElementById('iconSun');
   
   // Set initial icon rotation/details based on theme
   updateThemeIcon();
@@ -104,6 +100,7 @@ function initTheme() {
   });
 }
 
+// Update Icon Theme
 function updateThemeIcon() {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   const btn = document.getElementById('btnToggleTheme');
@@ -123,7 +120,6 @@ function updateThemeIcon() {
 // --- MODAL CONTROLLERS ---
 function initModals() {
   const modalHistory = document.getElementById('modalHistory');
-  const modalGoal = document.getElementById('modalGoal');
   
   // Triggers for History Modal
   const statTotal = document.getElementById('statTotal');
@@ -139,57 +135,10 @@ function initModals() {
   statCount.addEventListener('click', openHistory);
   modalHistoryClose.addEventListener('click', () => modalHistory.classList.remove('open'));
   
-  // Triggers for Savings Goal Modal
-  const btnSetGoal = document.getElementById('btnSetGoal');
-  const modalGoalClose = document.getElementById('modalGoalClose');
-  const btnCancelGoal = document.getElementById('btnCancelGoal');
-  const formSetGoal = document.getElementById('formSetGoal');
-  const inputGoalAmount = document.getElementById('inputGoalAmount');
-  
-  btnSetGoal.addEventListener('click', () => {
-    inputGoalAmount.value = appData.targetGoal;
-    modalGoal.classList.add('open');
-    inputGoalAmount.focus();
-  });
-  
-  const closeGoalModal = () => modalGoal.classList.remove('open');
-  modalGoalClose.addEventListener('click', closeGoalModal);
-  btnCancelGoal.addEventListener('click', closeGoalModal);
-  
-  formSetGoal.addEventListener('submit', () => {
-    const newGoalValue = Number(inputGoalAmount.value);
-    if (newGoalValue && newGoalValue >= 1000) {
-      appData.targetGoal = newGoalValue;
-      localStorage.setItem(STORAGE_GOAL_KEY, newGoalValue);
-      renderGoalTracker();
-      closeGoalModal();
-    }
-  });
-
-  // Close modals when clicking overlay
+  // Close modal when clicking overlay
   window.addEventListener('click', (e) => {
     if (e.target === modalHistory) modalHistory.classList.remove('open');
-    if (e.target === modalGoal) modalGoal.classList.remove('open');
   });
-}
-
-// --- SAVINGS GOAL PROGRESS TRACKER ---
-function renderGoalTracker() {
-  const fill = document.getElementById('goalProgressFill');
-  const percentText = document.getElementById('goalPercent');
-  const targetText = document.getElementById('goalTargetText');
-  
-  const percentage = appData.totalTabungan > 0 
-    ? Math.round((appData.totalTabungan / appData.targetGoal) * 100) 
-    : 0;
-  
-  // Visual limit at 100% for progress bar width
-  const visualPercentage = Math.min(percentage, 100);
-  fill.style.width = `${visualPercentage}%`;
-  
-  // Text percentage can exceed 100% for hyper savings achievement
-  percentText.innerText = `${percentage}%`;
-  targetText.innerText = `Target: ${formatIDR(appData.targetGoal)}`;
 }
 
 // --- DATA FETCHING & ERROR HANDLING ---
@@ -438,7 +387,7 @@ function renderCharts() {
             color: colors.text,
             font: { family: 'Inter', size: 10 },
             callback: function(value) {
-              return formatIDR(value).replace(',00', '').replace('Rp ', 'Rp ');
+              return formatIDR(value).replace(',00', '').replace('Rp ', 'Rp ');
             }
           }
         }
@@ -583,9 +532,6 @@ async function muatData() {
     // Render Stats
     updateStatsUI();
     
-    // Render Goal progress
-    renderGoalTracker();
-    
     // Render Weekly list
     renderRingkasan();
     
@@ -627,7 +573,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // 1. Initialize Visual theme switcher
   initTheme();
   
-  // 2. Initialize Modals and Goal setup
+  // 2. Initialize Modals
   initModals();
   
   // 3. Initialize dynamic inputs and smart filters
