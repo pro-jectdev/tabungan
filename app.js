@@ -1,7 +1,7 @@
 /**
  * =======================================================
  * Premium Savings Dashboard Logic
- * Powered by ES6+, Chart.js, and Vanilla CSS
+ * Powered by ES6+ and Vanilla CSS
  * =======================================================
  */
 
@@ -16,10 +16,6 @@ let appData = {
   ringkasan: [],
   totalTabungan: 0
 };
-
-// Chart.js Instances
-let chartAccumulationInstance = null;
-let chartContributionInstance = null;
 
 // --- FORMATTERS & HELPERS ---
 function formatIDR(angka = 0) {
@@ -58,32 +54,9 @@ function sortWeeks(weeks) {
   });
 }
 
-// Get CSS custom property value by name
-function getCssVariable(variableName) {
-  return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
-}
-
-// Get Theme Colors for Charts
-function getChartColors() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  return {
-    text: getCssVariable('--text-muted') || '#94a3b8',
-    grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(148, 163, 184, 0.1)',
-    primary: getCssVariable('--accent-primary') || '#10b981',
-    secondary: getCssVariable('--accent-secondary') || '#0ea5e9',
-    background: isDark ? '#111726' : '#ffffff',
-    palette: [
-      '#10b981', '#0ea5e9', '#6366f1', '#f59e0b', 
-      '#ec4899', '#8b5cf6', '#14b8a6', '#f43f5e'
-    ]
-  };
-}
-
 // --- UI THEME TOGGLE ---
 function initTheme() {
   const btnToggleTheme = document.getElementById('btnToggleTheme');
-  
-  // Set initial icon rotation/details based on theme
   updateThemeIcon();
 
   btnToggleTheme.addEventListener('click', () => {
@@ -94,13 +67,9 @@ function initTheme() {
     localStorage.setItem(STORAGE_THEME_KEY, newTheme);
     
     updateThemeIcon();
-    
-    // Dynamically update charts to match the theme color variables
-    updateChartsTheme();
   });
 }
 
-// Update Icon Theme
 function updateThemeIcon() {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   const btn = document.getElementById('btnToggleTheme');
@@ -120,8 +89,6 @@ function updateThemeIcon() {
 // --- MODAL CONTROLLERS ---
 function initModals() {
   const modalHistory = document.getElementById('modalHistory');
-  
-  // Triggers for History Modal
   const statTotal = document.getElementById('statTotal');
   const statCount = document.getElementById('statCount');
   const modalHistoryClose = document.getElementById('modalHistoryClose');
@@ -135,7 +102,7 @@ function initModals() {
   statCount.addEventListener('click', openHistory);
   modalHistoryClose.addEventListener('click', () => modalHistory.classList.remove('open'));
   
-  // Close modal when clicking overlay
+  // Close modals when clicking overlay
   window.addEventListener('click', (e) => {
     if (e.target === modalHistory) modalHistory.classList.remove('open');
   });
@@ -306,185 +273,6 @@ function renderModalHistoryTable(filterKeyword = '') {
   `).join('');
 }
 
-// --- CHARTS CREATION & REDRAW LOGIC ---
-function renderCharts() {
-  const colors = getChartColors();
-  
-  // --- Data Process 1: Accumulation Trend Line Chart ---
-  const weeksGrouped = {};
-  appData.riwayat.forEach(item => {
-    const wk = item.minggu || 'MINGGU -';
-    weeksGrouped[wk] = (weeksGrouped[wk] || 0) + Number(item.jumlah || 0);
-  });
-  
-  // Sort weeks naturally
-  const sortedWeekKeys = sortWeeks(Object.keys(weeksGrouped));
-  
-  // Calculate running cumulative total
-  let cumulative = 0;
-  const accumulationDataPoints = sortedWeekKeys.map(week => {
-    cumulative += weeksGrouped[week];
-    return cumulative;
-  });
-  
-  // Create Line Chart
-  const ctxAccumulation = document.getElementById('chartAccumulation').getContext('2d');
-  
-  if (chartAccumulationInstance) {
-    chartAccumulationInstance.destroy();
-  }
-  
-  // Create smooth visual gradient under line
-  const fillGradient = ctxAccumulation.createLinearGradient(0, 0, 0, 220);
-  fillGradient.addColorStop(0, colors.primary.replace(')', ', 0.35)').replace('rgb', 'rgba').replace('hsl', 'hsla'));
-  fillGradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
-  
-  chartAccumulationInstance = new Chart(ctxAccumulation, {
-    type: 'line',
-    data: {
-      labels: sortedWeekKeys,
-      datasets: [{
-        label: 'Total Tabungan Akumulatif',
-        data: accumulationDataPoints,
-        borderColor: colors.primary,
-        borderWidth: 3.5,
-        pointBackgroundColor: colors.background,
-        pointBorderColor: colors.primary,
-        pointBorderWidth: 2.5,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        tension: 0.35,
-        fill: true,
-        backgroundColor: fillGradient
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(9, 13, 22, 0.85)',
-          titleFont: { family: 'Outfit', size: 13 },
-          bodyFont: { family: 'Inter', size: 12 },
-          padding: 12,
-          cornerRadius: 8,
-          callbacks: {
-            label: function(context) {
-              return ` Total: ${formatIDR(context.raw)}`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: colors.text, font: { family: 'Inter', size: 10 } }
-        },
-        y: {
-          grid: { color: colors.grid },
-          ticks: {
-            color: colors.text,
-            font: { family: 'Inter', size: 10 },
-            callback: function(value) {
-              return formatIDR(value).replace(',00', '').replace('Rp ', 'Rp ');
-            }
-          }
-        }
-      }
-    }
-  });
-
-  // --- Data Process 2: Member Proportions (Doughnut Chart) ---
-  const memberTotals = {};
-  appData.riwayat.forEach(item => {
-    const nm = (item.nama || 'ANONIM').toUpperCase();
-    memberTotals[nm] = (memberTotals[nm] || 0) + Number(item.jumlah || 0);
-  });
-  
-  const memberNames = Object.keys(memberTotals);
-  const memberValues = memberNames.map(name => memberTotals[name]);
-  
-  const ctxContribution = document.getElementById('chartContribution').getContext('2d');
-  
-  if (chartContributionInstance) {
-    chartContributionInstance.destroy();
-  }
-  
-  chartContributionInstance = new Chart(ctxContribution, {
-    type: 'doughnut',
-    data: {
-      labels: memberNames,
-      datasets: [{
-        data: memberValues,
-        backgroundColor: colors.palette,
-        borderWidth: document.documentElement.getAttribute('data-theme') === 'dark' ? 3 : 2,
-        borderColor: colors.background,
-        hoverOffset: 12
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'right',
-          labels: {
-            color: colors.text,
-            font: { family: 'Inter', size: 11, weight: '500' },
-            boxWidth: 12,
-            boxHeight: 12,
-            padding: 14
-          }
-        },
-        tooltip: {
-          backgroundColor: 'rgba(9, 13, 22, 0.85)',
-          titleFont: { family: 'Outfit', size: 12 },
-          bodyFont: { family: 'Inter', size: 12 },
-          padding: 12,
-          cornerRadius: 8,
-          callbacks: {
-            label: function(context) {
-              const totalSum = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = Math.round((context.raw / totalSum) * 100);
-              return ` ${context.label}: ${formatIDR(context.raw)} (${percentage}%)`;
-            }
-          }
-        }
-      },
-      cutout: '65%'
-    }
-  });
-}
-
-function updateChartsTheme() {
-  if (chartAccumulationInstance && chartContributionInstance) {
-    const colors = getChartColors();
-    
-    // Update Line Chart Colors
-    chartAccumulationInstance.options.scales.x.ticks.color = colors.text;
-    chartAccumulationInstance.options.scales.y.ticks.color = colors.text;
-    chartAccumulationInstance.options.scales.y.grid.color = colors.grid;
-    chartAccumulationInstance.data.datasets[0].borderColor = colors.primary;
-    chartAccumulationInstance.data.datasets[0].pointBorderColor = colors.primary;
-    chartAccumulationInstance.data.datasets[0].pointBackgroundColor = colors.background;
-    
-    const ctxAccumulation = document.getElementById('chartAccumulation').getContext('2d');
-    const fillGradient = ctxAccumulation.createLinearGradient(0, 0, 0, 220);
-    fillGradient.addColorStop(0, colors.primary.replace(')', ', 0.35)').replace('rgb', 'rgba').replace('hsl', 'hsla'));
-    fillGradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
-    chartAccumulationInstance.data.datasets[0].backgroundColor = fillGradient;
-    
-    chartAccumulationInstance.update();
-
-    // Update Doughnut Chart Colors
-    chartContributionInstance.options.plugins.legend.labels.color = colors.text;
-    chartContributionInstance.data.datasets[0].borderColor = colors.background;
-    chartContributionInstance.data.datasets[0].borderWidth = document.documentElement.getAttribute('data-theme') === 'dark' ? 3 : 2;
-    chartContributionInstance.update();
-  }
-}
-
 // --- UPDATE STATS AND CORE UI ---
 function updateStatsUI() {
   let total = 0;
@@ -534,9 +322,6 @@ async function muatData() {
     
     // Render Weekly list
     renderRingkasan();
-    
-    // Render Charts
-    renderCharts();
     
     // Reset search inputs
     document.getElementById('inputSearchMember').value = '';
