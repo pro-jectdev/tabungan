@@ -60,7 +60,7 @@
       </div>
     </header>
 
-    <!-- KEY STATS & GOAL TRACKER -->
+    <!-- KEY STATS -->
     <main class="stats-grid">
       
       <!-- Total Savings Card -->
@@ -88,28 +88,6 @@
           <div class="stat-icon-wrapper">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
           </div>
-        </div>
-      </section>
-
-      <!-- Goal Tracker Card -->
-      <section class="glass-card goal-tracker">
-        <div class="goal-header">
-          <span class="stat-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-            Target Tabungan
-          </span>
-          <button id="btnSetGoal" class="btn btn-icon" style="width:28px; height:28px; border:none; background:none;" title="Ubah Target Goal">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          </button>
-        </div>
-        
-        <div class="progress-track">
-          <div id="goalProgressFill" class="progress-fill"></div>
-        </div>
-
-        <div class="goal-footer">
-          <span id="goalPercent" class="goal-numbers">0%</span>
-          <span id="goalTargetText" class="goal-label">Target: Rp 20.000.000</span>
         </div>
       </section>
 
@@ -157,7 +135,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             Ringkasan Mingguan
           </h2>
-          <span class="btn-primary" style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:0.25rem 0.65rem; border-radius:99px; cursor:default; box-shadow:none;">
+          <span class="badge-realtime">
             Real-Time
           </span>
         </div>
@@ -227,33 +205,6 @@
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: CHANGE SAVINGS GOAL -->
-  <div id="modalGoal" class="modal-overlay">
-    <div class="modal-container" style="max-width:400px;">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-          Atur Target Tabungan
-        </h2>
-        <button id="modalGoalClose" class="modal-close" aria-label="Tutup">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <div class="modal-content">
-        <form id="formSetGoal" onsubmit="event.preventDefault();">
-          <div class="form-group">
-            <label for="inputGoalAmount" class="form-label">Target Nominal (Rp)</label>
-            <input type="number" id="inputGoalAmount" class="form-input" placeholder="Masukkan target (contoh: 20000000)" required min="1000" />
-          </div>
-          <div style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1rem;">
-            <button type="button" id="btnCancelGoal" class="btn btn-secondary">Batal</button>
-            <button type="submit" class="btn btn-primary">Simpan Target</button>
-          </div>
-        </form>
       </div>
     </div>
   </div>
