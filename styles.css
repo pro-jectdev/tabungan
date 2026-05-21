@@ -234,7 +234,7 @@ body {
   box-shadow: var(--card-shadow-hover);
 }
 
-/* Stat Grid Layout (Adjusted to balanced 2 columns) */
+/* Stat Grid Layout */
 .stats-grid {
   width: 100%;
   display: grid;
@@ -395,7 +395,7 @@ body {
   font-weight: 700;
   background: var(--accent-light);
   color: var(--accent-primary);
-  padding: 0.25rem 0.6;
+  padding: 0.25rem 0.6rem;
   border-radius: 99px;
 }
 
@@ -457,21 +457,42 @@ body {
   user-select: none;
 }
 
+/* Premium Icon Action Buttons with Squircle Glassmorphism */
 .btn-icon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 14px;
   border: 1px solid var(--border-glass);
-  background: var(--bg-glass);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--text-main);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-icon:hover {
-  background: var(--accent-light);
+  background: var(--bg-secondary);
   color: var(--accent-primary);
   border-color: var(--accent-primary);
-  transform: rotate(15deg) scale(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px var(--accent-glow), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.btn-icon:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.btn-icon:hover svg {
+  transform: rotate(15deg) scale(1.08);
+}
+
+.btn-icon svg {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-primary {
@@ -740,6 +761,12 @@ body {
   color: var(--danger);
 }
 
+/* Soft Smooth Pulsing for Refresh */
+.animate-pulse {
+  animation: pulseSmooth 1.5s infinite ease-in-out;
+  opacity: 0.7;
+}
+
 /* Animations Definition */
 @keyframes fadeIn {
   from {
@@ -759,6 +786,11 @@ body {
   100% {
     background-position: -200% 0;
   }
+}
+
+@keyframes pulseSmooth {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.95); opacity: 0.5; }
 }
 
 /* Responsive Scaling Adjustments */
