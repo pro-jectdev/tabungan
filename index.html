@@ -3,175 +3,354 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Dashboard Tabungan Keluarga Premium - Pantau dan lacak tabungan mingguan anggota keluarga Anda secara real-time dengan grafik interaktif dan desain elegan." />
-  <meta name="theme-color" content="#10b981" />
-  
-  <title>Dashboard Tabungan Premium</title>
+  <title>Dashboard Tabungan</title>
 
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Theme Script (Prevent Flicker) -->
-  <script>
-    (function() {
-      const savedTheme = localStorage.getItem('savings-dashboard-theme') || 'light';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    })();
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    .card-base {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+    }
+
+    .summary-area {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .summary-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .summary-area::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+  </style>
 </head>
 
-<body>
+<body class="p-4 md:p-8">
 
-  <!-- Background Abstract Orbs -->
-  <div class="bg-decorations">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-  </div>
+  <div class="max-w-5xl mx-auto space-y-6">
 
-  <div class="container">
-    
-    <!-- HEADER PANEL -->
-    <header class="header-card">
-      <div class="header-left">
-        <h1>Dashboard Tabungan</h1>
-        <p class="subtitle">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          Assalamualaikum Malang
-        </p>
-        <p id="lastUpdate" class="update-time">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          Menghubungkan ke database...
-        </p>
-      </div>
+    <div class="card-base p-8 md:p-14 shadow-xl bg-gradient-to-r from-white to-emerald-50">
+      <h1 class="text-[28px] sm:text-[42px] md:text-6xl font-extrabold text-slate-900 leading-tight whitespace-nowrap">
+  <span class="inline">Dashboard</span>
+  <span class="inline text-emerald-600">Tabungan</span>
+</h1>
 
-      <div class="header-actions">
-        <!-- Refresh Button -->
-        <button id="btnRefresh" class="btn btn-icon" title="Segarkan Data" aria-label="Segarkan Data">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-        </button>
-        <!-- Dark Mode Toggle Button -->
-        <button id="btnToggleTheme" class="btn btn-icon" title="Ganti Tema" aria-label="Ganti Tema">
-          <svg id="iconSun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        </button>
-      </div>
-    </header>
+      <p class="text-base md:text-xl text-slate-500 mt-4 italic font-medium">
+        Assalamualaikum Malang
+      </p>
 
-    <!-- KEY STATS -->
-    <main class="stats-grid">
-      
-      <!-- Total Savings Card -->
-      <section id="statTotal" class="glass-card stat-card accent" title="Klik untuk melihat riwayat setoran">
-        <div class="stat-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+      <p id="lastUpdate" class="text-xs text-slate-400 mt-3">
+        Menunggu update...
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div class="bg-emerald-600 rounded-[24px] p-6 text-white shadow-md">
+        <p class="text-xs uppercase tracking-widest opacity-80 font-bold">
           Total Tabungan
-        </div>
-        <div class="stat-content">
-          <h2 id="totalTabungan" class="stat-value">Rp 0</h2>
-          <div class="stat-icon-wrapper">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-          </div>
-        </div>
-      </section>
+        </p>
 
-      <!-- Transaction Count Card -->
-      <section id="statCount" class="glass-card stat-card" title="Klik untuk melihat riwayat setoran">
-        <div class="stat-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <h2 id="totalTabungan" class="text-4xl font-extrabold mt-3 text-white">
+          Rp 0
+        </h2>
+      </div>
+
+      <div class="card-base p-6 shadow-sm">
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">
           Jumlah Transaksi
-        </div>
-        <div class="stat-content">
-          <h2 id="countSetoran" class="stat-value">0</h2>
-          <div class="stat-icon-wrapper">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-          </div>
-        </div>
-      </section>
+        </p>
 
-    </main>
+        <h2 id="countSetoran" class="text-4xl font-extrabold mt-3">
+          0
+        </h2>
+      </div>
+    </div>
 
-    <!-- WEEKLY SUMMARY (FULL WIDTH) -->
-    <section class="glass-card">
-      
-      <div class="panel-header">
-        <h2 class="panel-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+    <div class="card-base overflow-hidden shadow-sm">
+
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+        <h2 class="font-bold text-slate-700 text-xs uppercase tracking-widest">
           Ringkasan Mingguan
         </h2>
-        <span class="btn-primary" style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:0.25rem 0.65rem; border-radius:99px; cursor:default; box-shadow:none;">
-          Real-Time
+
+        <span class="text-[10px] bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full font-bold">
+          Terupdate
         </span>
       </div>
 
-      <!-- Smart Filter Bar -->
-      <div class="filter-bar">
-        <div class="input-search-wrapper">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" id="inputSearchMember" class="input-search" placeholder="Cari nama anggota keluarga..." />
+      <div id="ringkasanNama" class="summary-area p-5 space-y-6">
+        <div class="text-center py-8 text-slate-400 italic text-sm animate-pulse">
+          Menghubungkan ke server Google...
         </div>
       </div>
 
-      <!-- Weekly Summary Area Container -->
-      <div id="ringkasanNama" class="summary-area">
-        <!-- Loading skeleton state on initial fetch -->
-        <div class="skeleton-card">
-          <div class="skeleton skeleton-text"></div>
-          <div class="skeleton skeleton-text short"></div>
-          <div class="skeleton skeleton-member"></div>
-          <div class="skeleton skeleton-member"></div>
-          <div class="skeleton skeleton-member"></div>
-        </div>
-      </div>
-
-    </section>
-
-  </div>
-
-  <!-- MODAL: TRANSACTION HISTORY -->
-  <div id="modalHistory" class="modal-overlay">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2 class="modal-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          Riwayat Setoran Tabungan
-        </h2>
-        <button id="modalHistoryClose" class="modal-close" aria-label="Tutup Riwayat">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <div class="modal-content">
-        <!-- Filter inside Modal -->
-        <div class="filter-bar">
-          <div class="input-search-wrapper">
-            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="inputSearchModal" class="input-search" placeholder="Cari berdasarkan nama anggota..." />
-          </div>
-        </div>
-        
-        <!-- Table container -->
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Minggu</th>
-                <th>Nama Anggota</th>
-                <th>Jumlah Setoran</th>
-              </tr>
-            </thead>
-            <tbody id="tableHistoryBody">
-              <tr>
-                <td colspan="3" style="text-align:center; padding:2rem; color:var(--text-muted);">
-                  Memuat riwayat transaksi...
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- App Logic script -->
-  <script src="app.js"></script>
+  <script>
+    /**
+     * URL Google Apps Script
+     */
+    const URL_API = "https://script.google.com/macros/s/AKfycbxeDlfdcAgps5xGGIKR6t4ByANwmNL6gd7kZ0O0WFYQ-ssfTOI_UPhcVlwZp4uryBQZ6Q/exec";
+
+    /**
+     * Secret sederhana internal keluarga
+     */
+    const SECRET_KEY = "keluarga123";
+
+    /**
+     * Format Rupiah
+     */
+    function formatIDR(angka = 0) {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      }).format(Number(angka));
+    }
+
+    /**
+     * Escape HTML untuk keamanan ringan
+     */
+    function escapeHTML(str = '') {
+      return String(str).replace(/[&<>"']/g, function (m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        })[m];
+      });
+    }
+
+    /**
+     * Loading state
+     */
+    function tampilkanLoading() {
+      document.getElementById('ringkasanNama').innerHTML = `
+        <div class="text-center py-10 text-slate-400 animate-pulse italic">
+          Memuat data tabungan...
+        </div>
+      `;
+    }
+
+    /**
+     * Error state
+     */
+    function tampilkanError(pesan = "Terjadi kesalahan") {
+      document.getElementById('ringkasanNama').innerHTML = `
+        <div class="text-center py-10">
+          <p class="text-red-500 font-bold">
+            Data tidak dapat dimuat
+          </p>
+
+          <p class="text-xs text-slate-400 mt-2">
+            ${escapeHTML(pesan)}
+          </p>
+        </div>
+      `;
+    }
+
+    /**
+     * Ambil data dari Apps Script
+     */
+    async function ambilData() {
+
+      const controller = new AbortController();
+
+      const timeout = setTimeout(() => {
+        controller.abort();
+      }, 10000);
+
+      try {
+
+        const response = await fetch(
+          `${URL_API}?key=${SECRET_KEY}`,
+          {
+            method: 'GET',
+            signal: controller.signal
+          }
+        );
+
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          throw new Error("Server gagal merespon");
+        }
+
+        return await response.json();
+
+      } catch (err) {
+
+        if (err.name === 'AbortError') {
+          throw new Error("Koneksi timeout");
+        }
+
+        throw err;
+      }
+    }
+
+    /**
+     * Render statistik
+     */
+    function renderStatistik(data) {
+
+      let total = 0;
+
+      if (Array.isArray(data.riwayat)) {
+
+        data.riwayat.forEach(item => {
+          total += Number(item.jumlah || 0);
+        });
+
+        document.getElementById('totalTabungan').innerText =
+          formatIDR(total);
+
+        document.getElementById('countSetoran').innerText =
+          data.riwayat.length;
+      }
+    }
+
+    /**
+     * Render ringkasan mingguan
+     */
+    function renderRingkasan(data) {
+
+      let html = "";
+
+      if (
+        Array.isArray(data.ringkasan) &&
+        data.ringkasan.length > 0
+      ) {
+
+        data.ringkasan.forEach(group => {
+
+          const detail = Array.isArray(group.detail)
+            ? group.detail
+            : [];
+
+          html += `
+            <div class="card-base p-5 shadow-sm border border-slate-100 bg-white">
+
+              <div class="flex justify-between items-center mb-4">
+
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                  ${escapeHTML(group.minggu || '-')}
+                </h3>
+
+                <span class="text-[10px] text-slate-400 font-bold">
+                  ${detail.length} ANGGOTA
+                </span>
+
+              </div>
+
+              <div class="space-y-3">
+
+                ${detail.map(item => `
+
+                  <div class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-3">
+
+                    <p class="text-sm font-bold uppercase text-slate-700">
+                      ${escapeHTML(item.nama || '-')}
+                    </p>
+
+                    <p class="text-emerald-700 font-black">
+                      ${formatIDR(item.total || 0)}
+                    </p>
+
+                  </div>
+
+                `).join('')}
+
+              </div>
+
+            </div>
+          `;
+        });
+
+      } else {
+
+        html = `
+          <p class="text-center py-10 text-slate-400 italic">
+            Belum ada data mingguan.
+          </p>
+        `;
+      }
+
+      document.getElementById('ringkasanNama').innerHTML = html;
+    }
+
+    /**
+     * Update waktu terakhir
+     */
+    function updateWaktu() {
+
+      const sekarang = new Date();
+
+      const waktu = sekarang.toLocaleString('id-ID', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      });
+
+      document.getElementById('lastUpdate').innerText =
+        `Update terakhir: ${waktu}`;
+    }
+
+    /**
+     * Main function
+     */
+    async function muatData() {
+
+      tampilkanLoading();
+
+      try {
+
+        const data = await ambilData();
+
+        renderStatistik(data);
+
+        renderRingkasan(data);
+
+        updateWaktu();
+
+      } catch (err) {
+
+        console.error(err);
+
+        tampilkanError(err.message);
+      }
+    }
+
+    /**
+     * Load pertama
+     */
+    window.onload = () => {
+
+      muatData();
+
+      /**
+       * Auto refresh tiap 1 menit
+       */
+      setInterval(muatData, 60000);
+    };
+  </script>
 
 </body>
 </html>
