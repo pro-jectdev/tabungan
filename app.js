@@ -26,6 +26,7 @@ function formatIDR(angka = 0) {
   }).format(Number(angka));
 }
 
+// Security Sanitization to prevent XSS injection
 function escapeHTML(str = '') {
   return String(str).replace(/[&<>"']/g, function (m) {
     return ({
@@ -38,13 +39,11 @@ function escapeHTML(str = '') {
   });
 }
 
-// Extract number from week string (e.g., "MINGGU 12" -> 12, "Week 3" -> 3)
 function extractWeekNumber(weekStr) {
   const match = weekStr.match(/\d+/);
   return match ? parseInt(match[0], 10) : 0;
 }
 
-// Sort weeks chronologically
 function sortWeeks(weeks) {
   return [...weeks].sort((a, b) => {
     const numA = extractWeekNumber(a);
@@ -73,15 +72,27 @@ function initTheme() {
 function updateThemeIcon() {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   const btn = document.getElementById('btnToggleTheme');
+  
+  // Implemented clean fade-in entry animations inside icons to avoid hard-flashing
   if (currentTheme === 'dark') {
     btn.innerHTML = `
-      <!-- Moon Icon for Dark Mode -->
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: fadeIn 0.3s ease forwards;">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
     `;
   } else {
     btn.innerHTML = `
-      <!-- Sun Icon for Light Mode -->
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: fadeIn 0.3s ease forwards;">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
     `;
   }
 }
@@ -111,7 +122,7 @@ function initModals() {
 // --- DATA FETCHING & ERROR HANDLING ---
 async function ambilData() {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds timeout
+  const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds connection timeout limit
 
   try {
     const response = await fetch(`${URL_API}?key=${SECRET_KEY}`, {
@@ -135,7 +146,7 @@ async function ambilData() {
 }
 
 function renderLoading() {
-  // Skeleton Loading on Weekly Summary Panel
+  // Skeleton Loading Area layout injection
   document.getElementById('ringkasanNama').innerHTML = `
     <div class="skeleton-card">
       <div class="skeleton skeleton-text" style="height:18px; margin-bottom:1rem;"></div>
@@ -172,12 +183,10 @@ function renderRingkasan(filterKeyword = '') {
     appData.ringkasan.forEach(group => {
       const detail = Array.isArray(group.detail) ? group.detail : [];
       
-      // Filter details inside week by member name keyword
       const filteredDetail = detail.filter(item => 
         (item.nama || '').toLowerCase().includes(filteredKeyword)
       );
 
-      // Only show week group if it contains matching members
       if (filteredDetail.length > 0) {
         activeWeekCount++;
         html += `
@@ -242,7 +251,6 @@ function renderModalHistoryTable(filterKeyword = '') {
     return;
   }
   
-  // Filter riwayat rows
   const filteredRiwayat = appData.riwayat.filter(item => 
     (item.nama || '').toLowerCase().includes(filteredKeyword)
   );
@@ -258,7 +266,6 @@ function renderModalHistoryTable(filterKeyword = '') {
     return;
   }
   
-  // Generate Table Rows
   tbody.innerHTML = filteredRiwayat.map(item => `
     <tr>
       <td class="table-date">${escapeHTML(item.minggu || '-')}</td>
@@ -305,7 +312,6 @@ function updateLastUpdatedTime() {
 async function muatData() {
   renderLoading();
   
-  // Rotate refresh button icon to show visual action
   const btnRefresh = document.getElementById('btnRefresh');
   btnRefresh.style.pointerEvents = 'none';
   btnRefresh.classList.add('animate-pulse');
@@ -313,28 +319,21 @@ async function muatData() {
   try {
     const data = await ambilData();
     
-    // Store variables to global state
     appData.riwayat = Array.isArray(data.riwayat) ? data.riwayat : [];
     appData.ringkasan = Array.isArray(data.ringkasan) ? data.ringkasan : [];
     
-    // Render Stats
     updateStatsUI();
-    
-    // Render Weekly list
     renderRingkasan();
     
-    // Reset search inputs
     document.getElementById('inputSearchMember').value = '';
     document.getElementById('inputSearchModal').value = '';
     
-    // Success Timestamp update
     updateLastUpdatedTime();
     
   } catch (err) {
     console.error("Dashboard error:", err);
     renderError(err.message);
   } finally {
-    // Release refresh button lock and animations
     btnRefresh.style.pointerEvents = 'auto';
     btnRefresh.classList.remove('animate-pulse');
   }
@@ -355,21 +354,11 @@ function initFilters() {
 
 // --- INITIALIZE APPLICATION ON LOAD ---
 window.addEventListener('DOMContentLoaded', () => {
-  // 1. Initialize Visual theme switcher
   initTheme();
-  
-  // 2. Initialize Modals
   initModals();
-  
-  // 3. Initialize dynamic inputs and smart filters
   initFilters();
   
-  // 4. Hook refresh action
   document.getElementById('btnRefresh').addEventListener('click', muatData);
-  
-  // 5. Initial Data load trigger
   muatData();
-  
-  // 6. Automated Background poll every 60 seconds
   setInterval(muatData, 60000);
 });
