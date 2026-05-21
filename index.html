@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Dashboard Tabungan Keluarga Premium - Pantau dan lacak tabungan mingguan anggota keluarga Anda secara real-time dengan grafik interaktif dan desain elegan." />
+  <meta name="theme-color" content="#10b981" />
+  
+  <title>Dashboard Tabungan Premium</title>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Chart.js for Beautiful Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Theme Script (Prevent Flicker) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('savings-dashboard-theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+</head>
+
+<body>
+
+  <!-- Background Abstract Orbs -->
+  <div class="bg-decorations">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <div class="container">
+    
+    <!-- HEADER PANEL -->
+    <header class="header-card">
+      <div class="header-left">
+        <h1>Dashboard Tabungan</h1>
+        <p class="subtitle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          Assalamualaikum Malang
+        </p>
+        <p id="lastUpdate" class="update-time">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Menghubungkan ke database...
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <!-- Refresh Button -->
+        <button id="btnRefresh" class="btn btn-icon" title="Segarkan Data" aria-label="Segarkan Data">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        </button>
+        <!-- Dark Mode Toggle Button -->
+        <button id="btnToggleTheme" class="btn btn-icon" title="Ganti Tema" aria-label="Ganti Tema">
+          <!-- Light Theme Sun Icon (hidden in light mode via JS/CSS) -->
+          <svg id="iconSun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- KEY STATS & GOAL TRACKER -->
+    <main class="stats-grid">
+      
+      <!-- Total Savings Card -->
+      <section id="statTotal" class="glass-card stat-card accent" title="Klik untuk melihat riwayat setoran">
+        <div class="stat-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+          Total Tabungan
+        </div>
+        <div class="stat-content">
+          <h2 id="totalTabungan" class="stat-value">Rp 0</h2>
+          <div class="stat-icon-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transaction Count Card -->
+      <section id="statCount" class="glass-card stat-card" title="Klik untuk melihat riwayat setoran">
+        <div class="stat-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Jumlah Transaksi
+        </div>
+        <div class="stat-content">
+          <h2 id="countSetoran" class="stat-value">0</h2>
+          <div class="stat-icon-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Goal Tracker Card -->
+      <section class="glass-card goal-tracker">
+        <div class="goal-header">
+          <span class="stat-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+            Target Tabungan
+          </span>
+          <button id="btnSetGoal" class="btn btn-icon" style="width:28px; height:28px; border:none; background:none;" title="Ubah Target Goal">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </button>
+        </div>
+        
+        <div class="progress-track">
+          <div id="goalProgressFill" class="progress-fill"></div>
+        </div>
+
+        <div class="goal-footer">
+          <span id="goalPercent" class="goal-numbers">0%</span>
+          <span id="goalTargetText" class="goal-label">Target: Rp 20.000.000</span>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- CHARTS & TRANSACTION DATA GRID -->
+    <div class="dashboard-grid">
+      
+      <!-- LEFT SECTION: CHARTS -->
+      <div class="charts-container">
+        
+        <!-- Tabungan Perkembangan (Line Chart) -->
+        <section class="glass-card chart-card">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+              Tren Akumulasi Tabungan
+            </h2>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chartAccumulation"></canvas>
+          </div>
+        </section>
+
+        <!-- Anggota Contribution (Doughnut Chart) -->
+        <section class="glass-card chart-card">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+              Proporsi Setoran Anggota
+            </h2>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chartContribution"></canvas>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT SECTION: WEEKLY SUMMARY -->
+      <section class="glass-card">
+        
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            Ringkasan Mingguan
+          </h2>
+          <span class="btn-primary" style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:0.25rem 0.65rem; border-radius:99px; cursor:default; box-shadow:none;">
+            Real-Time
+          </span>
+        </div>
+
+        <!-- Smart Filter Bar -->
+        <div class="filter-bar">
+          <div class="input-search-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="inputSearchMember" class="input-search" placeholder="Cari nama anggota keluarga..." />
+          </div>
+        </div>
+
+        <!-- Weekly Summary Area Container -->
+        <div id="ringkasanNama" class="summary-area">
+          <!-- Loading skeleton state on initial fetch -->
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text short"></div>
+            <div class="skeleton skeleton-member"></div>
+            <div class="skeleton skeleton-member"></div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL: TRANSACTION HISTORY -->
+  <div id="modalHistory" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Riwayat Setoran Tabungan
+        </h2>
+        <button id="modalHistoryClose" class="modal-close" aria-label="Tutup Riwayat">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-content">
+        <!-- Filter inside Modal -->
+        <div class="filter-bar">
+          <div class="input-search-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="inputSearchModal" class="input-search" placeholder="Cari berdasarkan nama anggota..." />
+          </div>
+        </div>
+        
+        <!-- Table container -->
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Minggu</th>
+                <th>Nama Anggota</th>
+                <th>Jumlah Setoran</th>
+              </tr>
+            </thead>
+            <tbody id="tableHistoryBody">
+              <tr>
+                <td colspan="3" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                  Memuat riwayat transaksi...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CHANGE SAVINGS GOAL -->
+  <div id="modalGoal" class="modal-overlay">
+    <div class="modal-container" style="max-width:400px;">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          Atur Target Tabungan
+        </h2>
+        <button id="modalGoalClose" class="modal-close" aria-label="Tutup">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-content">
+        <form id="formSetGoal" onsubmit="event.preventDefault();">
+          <div class="form-group">
+            <label for="inputGoalAmount" class="form-label">Target Nominal (Rp)</label>
+            <input type="number" id="inputGoalAmount" class="form-input" placeholder="Masukkan target (contoh: 20000000)" required min="1000" />
+          </div>
+          <div style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1rem;">
+            <button type="button" id="btnCancelGoal" class="btn btn-secondary">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Target</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Logic script -->
+  <script src="app.js"></script>
+
+</body>
+</html>
