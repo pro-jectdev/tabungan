@@ -27,7 +27,7 @@
       transition: all 0.3s ease;
     }
 
-    /* DIUBAH: Mengurangi max-height dari 600px ke 380px agar pas menampilkan sekitar 2 minggu saja, sisanya scroll */
+    /* Mengurangi max-height dari 600px ke 380px agar pas menampilkan sekitar 2 minggu saja, sisanya scroll */
     .summary-area {
       max-height: 380px;
       overflow-y: auto;
@@ -121,7 +121,7 @@
         </span>
       </div>
 
-      <!-- Di sini area list dibatasi tingginya melalui kelas .summary-area di atas -->
+      <!-- Area list dibatasi tingginya melalui kelas .summary-area -->
       <div id="ringkasanNama" class="summary-area p-5 space-y-4 bg-slate-50/50">
         <div class="text-center py-8 text-slate-400 italic text-sm animate-pulse">
           Menghubungkan ke server Google...
@@ -334,12 +334,9 @@
       }
     }
 
+    // Hanya dijalankan satu kali saat halaman pertama dibuka
     window.onload = () => {
       muatData(true);
-
-      setInterval(() => {
-        muatData(false);
-      }, 60000);
     };
   </script>
 
