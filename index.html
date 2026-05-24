@@ -50,7 +50,6 @@
     <!-- Header Card -->
     <div class="card-base p-8 md:p-14 shadow-xl bg-gradient-to-r from-white to-emerald-50 relative overflow-hidden">
       <div class="relative z-10">
-        <!-- whitespace-nowrap dikembalikan di sini agar tulisan tetap satu baris ke samping -->
         <h1 class="text-[28px] sm:text-[42px] md:text-6xl font-extrabold text-slate-900 leading-tight whitespace-nowrap">
           Dashboard <span class="text-emerald-600">Tabungan</span>
         </h1>
@@ -76,7 +75,7 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="bg-emerald-600 rounded-[24px] p-6 text-white shadow-md hover:shadow-lg transition-shadow">
-        <p class="text-xs uppercase tracking-widest opacity-80 font-bold">
+        <p id="labelTotal" class="text-xs uppercase tracking-widest opacity-80 font-bold">
           Total Tabungan
         </p>
         <h2 id="totalTabungan" class="text-4xl font-extrabold mt-3 text-white">
@@ -85,13 +84,29 @@
       </div>
 
       <div class="card-base p-6 shadow-sm hover:shadow-md">
-        <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">
+        <p id="labelTransaksi" class="text-xs uppercase tracking-widest text-slate-400 font-bold">
           Jumlah Transaksi
         </p>
         <h2 id="countSetoran" class="text-4xl font-extrabold mt-3">
           0
         </h2>
       </div>
+    </div>
+
+    <!-- Kolom Pencarian Nama -->
+    <div class="card-base p-4 shadow-sm bg-white flex items-center gap-3">
+      <div class="text-slate-400 pl-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+      </div>
+      <input 
+        type="text" 
+        id="inputCariNama" 
+        placeholder="Cari nama anggota keluarga..." 
+        class="w-full bg-transparent text-sm font-medium placeholder-slate-400 text-slate-700 focus:outline-none"
+        oninput="tanganiPencarian()"
+      />
     </div>
 
     <!-- Summary Section -->
@@ -117,6 +132,8 @@
   <script>
     const URL_API = "https://script.google.com/macros/s/AKfycbxeDlfdcAgps5xGGIKR6t4ByANwmNL6gd7kZ0O0WFYQ-ssfTOI_UPhcVlwZp4uryBQZ6Q/exec";
     const SECRET_KEY = "keluarga123";
+
+    let dataCache = null;
 
     function formatIDR(angka = 0) {
       return new Intl.NumberFormat('id-ID', {
@@ -168,53 +185,88 @@
       }
     }
 
-    function renderStatistik(data) {
+    // Mengkalkulasi statistik berdasarkan kata kunci pencarian nama
+    function renderStatistik(data, kataKunci = "") {
       let total = 0;
       let jumlahTransaksi = 0;
+      const query = kataKunci.toLowerCase().trim();
 
       if (data && Array.isArray(data.riwayat)) {
-        data.riwayat.forEach(item => {
-          total += Number(item.jumlah || 0);
-        });
-        jumlahTransaksi = data.riwayat.length;
+        if (query === "") {
+          // Kasus 1: Tidak mencari nama, tampilkan total semua orang
+          data.riwayat.forEach(item => {
+            total += Number(item.jumlah || 0);
+          });
+          jumlahTransaksi = data.riwayat.length;
+          document.getElementById('labelTotal').innerText = "Total Tabungan";
+          document.getElementById('labelTransaksi').innerText = "Jumlah Transaksi";
+        } else {
+          // Kasus 2: Ada pencarian nama, hitung total orang yang dicari saja dari data mentah riwayat
+          data.riwayat.forEach(item => {
+            if (String(item.nama || '').toLowerCase().includes(query)) {
+              total += Number(item.jumlah || 0);
+              jumlahTransaksi++;
+            }
+          });
+          document.getElementById('labelTotal').innerText = `Total Tabungan Terfilter`;
+          document.getElementById('labelTransaksi').innerText = `Minggu Berpartisipasi`;
+        }
       }
 
       document.getElementById('totalTabungan').innerText = formatIDR(total);
       document.getElementById('countSetoran').innerText = jumlahTransaksi;
     }
 
-    function renderRingkasan(data) {
+    function renderRingkasan(data, kataKunci = "") {
       let html = "";
+      const query = kataKunci.toLowerCase().trim();
 
       if (data && Array.isArray(data.ringkasan) && data.ringkasan.length > 0) {
+        let adaDataCocok = false;
+
         data.ringkasan.forEach(group => {
           const detail = Array.isArray(group.detail) ? group.detail : [];
+          const detailTersaring = detail.filter(item => 
+            String(item.nama || '').toLowerCase().includes(query)
+          );
 
-          html += `
-            <div class="card-base p-5 shadow-sm border border-slate-100 bg-white hover:border-emerald-100">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                  ${escapeHTML(group.minggu || '-')}
-                </h3>
-                <span class="text-[10px] text-slate-400 font-bold">
-                  ${detail.length} ANGGOTA
-                </span>
+          if (detailTersaring.length > 0) {
+            adaDataCocok = true;
+            html += `
+              <div class="card-base p-5 shadow-sm border border-slate-100 bg-white hover:border-emerald-100">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                    ${escapeHTML(group.minggu || '-')}
+                  </h3>
+                  <span class="text-[10px] text-slate-400 font-bold">
+                    ${detailTersaring.length} ANGGOTA COCOK
+                  </span>
+                </div>
+                <div class="space-y-3">
+                  ${detailTersaring.map(item => `
+                    <div class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-3 hover:bg-emerald-50/30 transition-colors">
+                      <p class="text-sm font-bold uppercase text-slate-700">
+                        ${escapeHTML(item.nama || '-')}
+                      </p>
+                      <p class="text-emerald-700 font-black">
+                        ${formatIDR(item.total || 0)}
+                      </p>
+                    </div>
+                  `).join('')}
+                </div>
               </div>
-              <div class="space-y-3">
-                ${detail.map(item => `
-                  <div class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-3 hover:bg-emerald-50/30 transition-colors">
-                    <p class="text-sm font-bold uppercase text-slate-700">
-                      ${escapeHTML(item.nama || '-')}
-                    </p>
-                    <p class="text-emerald-700 font-black">
-                      ${formatIDR(item.total || 0)}
-                    </p>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
+            `;
+          }
         });
+
+        if (!adaDataCocok && query !== "") {
+          html = `
+            <p class="text-center py-10 text-slate-400 italic">
+              Nama "${escapeHTML(kataKunci)}" tidak ditemukan dalam riwayat mingguan.
+            </p>
+          `;
+        }
+
       } else {
         html = `
           <p class="text-center py-10 text-slate-400 italic">
@@ -235,18 +287,20 @@
       document.getElementById('lastUpdate').innerText = `Update terakhir: ${waktu}`;
     }
 
-    /**
-     * Main function dengan parameter 'denganLoading'
-     * Jika true (saat pertama load), tampilkan tulisan loading.
-     * Jika false (saat auto-refresh), update data diam-diam di background.
-     */
+    function tanganiPencarian() {
+      const kataKunci = document.getElementById('inputCariNama').value;
+      if (dataCache) {
+        renderStatistik(dataCache, kataKunci);
+        renderRingkasan(dataCache, kataKunci);
+      }
+    }
+
     async function muatData(denganLoading = true) {
       const badge = document.getElementById('statusBadge');
       
       if (denganLoading) {
         tampilkanLoading();
       } else {
-        // Efek visual ringan saat silent refresh berlangsung
         if (badge) {
           badge.innerText = "Memperbarui...";
           badge.className = "text-[10px] bg-amber-100 text-amber-600 px-3 py-1 rounded-full font-bold";
@@ -255,21 +309,24 @@
 
       try {
         const data = await ambilData();
-        renderStatistik(data);
-        renderRingkasan(data);
+        dataCache = data;
+
+        const kataKunciAktif = document.getElementById('inputCariNama').value;
+        
+        // Sekarang fungsi statistik juga membaca kata kunci aktif
+        renderStatistik(data, kataKunciAktif);
+        renderRingkasan(data, kataKunciAktif);
+        
         updateWaktu();
         
-        // Kembalikan status badge ke terupdate
         if (badge) {
           badge.innerText = "Terupdate";
           badge.className = "text-[10px] bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full font-bold";
         }
-        // Munculkan tombol refresh setelah load pertama sukses
         document.getElementById('btnRefresh').classList.remove('hidden');
 
       } catch (err) {
         console.error(err);
-        // Jika silent refresh gagal, kita infokan di badge tanpa merusak data yang sudah tampil
         if (!denganLoading && badge) {
           badge.innerText = "Gagal Memperbarui";
           badge.className = "text-[10px] bg-red-100 text-red-600 px-3 py-1 rounded-full font-bold";
@@ -280,10 +337,8 @@
     }
 
     window.onload = () => {
-      // Jalankan pertama kali dengan layar loading
       muatData(true);
 
-      // Jalankan setiap 60 detik di background (tanpa layar loading)
       setInterval(() => {
         muatData(false);
       }, 60000);
