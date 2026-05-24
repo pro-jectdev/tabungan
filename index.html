@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard Tabungan</title>
 
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
@@ -22,6 +24,7 @@
       background: white;
       border: 1px solid #e2e8f0;
       border-radius: 24px;
+      transition: all 0.3s ease;
     }
 
     .summary-area {
@@ -44,52 +47,60 @@
 
   <div class="max-w-5xl mx-auto space-y-6">
 
-    <div class="card-base p-8 md:p-14 shadow-xl bg-gradient-to-r from-white to-emerald-50">
-      <h1 class="text-[28px] sm:text-[42px] md:text-6xl font-extrabold text-slate-900 leading-tight whitespace-nowrap">
-  <span class="inline">Dashboard</span>
-  <span class="inline text-emerald-600">Tabungan</span>
-</h1>
+    <!-- Header Card -->
+    <div class="card-base p-8 md:p-14 shadow-xl bg-gradient-to-r from-white to-emerald-50 relative overflow-hidden">
+      <div class="relative z-10">
+        <!-- whitespace-nowrap dikembalikan di sini agar tulisan tetap satu baris ke samping -->
+        <h1 class="text-[28px] sm:text-[42px] md:text-6xl font-extrabold text-slate-900 leading-tight whitespace-nowrap">
+          Dashboard <span class="text-emerald-600">Tabungan</span>
+        </h1>
 
-      <p class="text-base md:text-xl text-slate-500 mt-4 italic font-medium">
-        Assalamualaikum Malang
-      </p>
+        <p class="text-base md:text-xl text-slate-500 mt-4 italic font-medium">
+          Assalamualaikum Malang
+        </p>
 
-      <p id="lastUpdate" class="text-xs text-slate-400 mt-3">
-        Menunggu update...
-      </p>
+        <div class="flex items-center gap-3 mt-3">
+          <p id="lastUpdate" class="text-xs text-slate-400">
+            Menunggu update...
+          </p>
+          <!-- Tombol Refresh Manual -->
+          <button onclick="muatData(false)" id="btnRefresh" class="text-xs text-emerald-600 hover:text-emerald-700 font-semibold focus:outline-none hidden">
+            ⟳ Refresh
+          </button>
+        </div>
+      </div>
+      <!-- Dekorasi Estetik di Background -->
+      <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-emerald-100 rounded-full blur-3xl opacity-50"></div>
     </div>
 
+    <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-      <div class="bg-emerald-600 rounded-[24px] p-6 text-white shadow-md">
+      <div class="bg-emerald-600 rounded-[24px] p-6 text-white shadow-md hover:shadow-lg transition-shadow">
         <p class="text-xs uppercase tracking-widest opacity-80 font-bold">
           Total Tabungan
         </p>
-
         <h2 id="totalTabungan" class="text-4xl font-extrabold mt-3 text-white">
           Rp 0
         </h2>
       </div>
 
-      <div class="card-base p-6 shadow-sm">
+      <div class="card-base p-6 shadow-sm hover:shadow-md">
         <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">
           Jumlah Transaksi
         </p>
-
         <h2 id="countSetoran" class="text-4xl font-extrabold mt-3">
           0
         </h2>
       </div>
     </div>
 
+    <!-- Summary Section -->
     <div class="card-base overflow-hidden shadow-sm">
-
       <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
         <h2 class="font-bold text-slate-700 text-xs uppercase tracking-widest">
           Ringkasan Mingguan
         </h2>
-
-        <span class="text-[10px] bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full font-bold">
+        <span id="statusBadge" class="text-[10px] bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full font-bold transition-all">
           Terupdate
         </span>
       </div>
@@ -99,24 +110,14 @@
           Menghubungkan ke server Google...
         </div>
       </div>
-
     </div>
+
   </div>
 
   <script>
-    /**
-     * URL Google Apps Script
-     */
     const URL_API = "https://script.google.com/macros/s/AKfycbxeDlfdcAgps5xGGIKR6t4ByANwmNL6gd7kZ0O0WFYQ-ssfTOI_UPhcVlwZp4uryBQZ6Q/exec";
-
-    /**
-     * Secret sederhana internal keluarga
-     */
     const SECRET_KEY = "keluarga123";
 
-    /**
-     * Format Rupiah
-     */
     function formatIDR(angka = 0) {
       return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -125,24 +126,12 @@
       }).format(Number(angka));
     }
 
-    /**
-     * Escape HTML untuk keamanan ringan
-     */
     function escapeHTML(str = '') {
-      return String(str).replace(/[&<>"']/g, function (m) {
-        return ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#039;'
-        })[m];
-      });
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      })[m]);
     }
 
-    /**
-     * Loading state
-     */
     function tampilkanLoading() {
       document.getElementById('ringkasanNama').innerHTML = `
         <div class="text-center py-10 text-slate-400 animate-pulse italic">
@@ -151,142 +140,82 @@
       `;
     }
 
-    /**
-     * Error state
-     */
     function tampilkanError(pesan = "Terjadi kesalahan") {
       document.getElementById('ringkasanNama').innerHTML = `
         <div class="text-center py-10">
-          <p class="text-red-500 font-bold">
-            Data tidak dapat dimuat
-          </p>
-
-          <p class="text-xs text-slate-400 mt-2">
-            ${escapeHTML(pesan)}
-          </p>
+          <p class="text-red-500 font-bold">Data tidak dapat dimuat</p>
+          <p class="text-xs text-slate-400 mt-2">${escapeHTML(pesan)}</p>
         </div>
       `;
     }
 
-    /**
-     * Ambil data dari Apps Script
-     */
     async function ambilData() {
-
       const controller = new AbortController();
-
-      const timeout = setTimeout(() => {
-        controller.abort();
-      }, 10000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
       try {
-
-        const response = await fetch(
-          `${URL_API}?key=${SECRET_KEY}`,
-          {
-            method: 'GET',
-            signal: controller.signal
-          }
-        );
-
+        const response = await fetch(`${URL_API}?key=${SECRET_KEY}`, {
+          method: 'GET',
+          signal: controller.signal
+        });
         clearTimeout(timeout);
 
-        if (!response.ok) {
-          throw new Error("Server gagal merespon");
-        }
-
+        if (!response.ok) throw new Error("Server gagal merespon");
         return await response.json();
-
       } catch (err) {
-
-        if (err.name === 'AbortError') {
-          throw new Error("Koneksi timeout");
-        }
-
+        if (err.name === 'AbortError') throw new Error("Koneksi timeout");
         throw err;
       }
     }
 
-    /**
-     * Render statistik
-     */
     function renderStatistik(data) {
-
       let total = 0;
+      let jumlahTransaksi = 0;
 
-      if (Array.isArray(data.riwayat)) {
-
+      if (data && Array.isArray(data.riwayat)) {
         data.riwayat.forEach(item => {
           total += Number(item.jumlah || 0);
         });
-
-        document.getElementById('totalTabungan').innerText =
-          formatIDR(total);
-
-        document.getElementById('countSetoran').innerText =
-          data.riwayat.length;
+        jumlahTransaksi = data.riwayat.length;
       }
+
+      document.getElementById('totalTabungan').innerText = formatIDR(total);
+      document.getElementById('countSetoran').innerText = jumlahTransaksi;
     }
 
-    /**
-     * Render ringkasan mingguan
-     */
     function renderRingkasan(data) {
-
       let html = "";
 
-      if (
-        Array.isArray(data.ringkasan) &&
-        data.ringkasan.length > 0
-      ) {
-
+      if (data && Array.isArray(data.ringkasan) && data.ringkasan.length > 0) {
         data.ringkasan.forEach(group => {
-
-          const detail = Array.isArray(group.detail)
-            ? group.detail
-            : [];
+          const detail = Array.isArray(group.detail) ? group.detail : [];
 
           html += `
-            <div class="card-base p-5 shadow-sm border border-slate-100 bg-white">
-
+            <div class="card-base p-5 shadow-sm border border-slate-100 bg-white hover:border-emerald-100">
               <div class="flex justify-between items-center mb-4">
-
                 <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
                   ${escapeHTML(group.minggu || '-')}
                 </h3>
-
                 <span class="text-[10px] text-slate-400 font-bold">
                   ${detail.length} ANGGOTA
                 </span>
-
               </div>
-
               <div class="space-y-3">
-
                 ${detail.map(item => `
-
-                  <div class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-3">
-
+                  <div class="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-3 hover:bg-emerald-50/30 transition-colors">
                     <p class="text-sm font-bold uppercase text-slate-700">
                       ${escapeHTML(item.nama || '-')}
                     </p>
-
                     <p class="text-emerald-700 font-black">
                       ${formatIDR(item.total || 0)}
                     </p>
-
                   </div>
-
                 `).join('')}
-
               </div>
-
             </div>
           `;
         });
-
       } else {
-
         html = `
           <p class="text-center py-10 text-slate-400 italic">
             Belum ada data mingguan.
@@ -297,58 +226,67 @@
       document.getElementById('ringkasanNama').innerHTML = html;
     }
 
-    /**
-     * Update waktu terakhir
-     */
     function updateWaktu() {
-
       const sekarang = new Date();
-
       const waktu = sekarang.toLocaleString('id-ID', {
         dateStyle: 'medium',
         timeStyle: 'short'
       });
-
-      document.getElementById('lastUpdate').innerText =
-        `Update terakhir: ${waktu}`;
+      document.getElementById('lastUpdate').innerText = `Update terakhir: ${waktu}`;
     }
 
     /**
-     * Main function
+     * Main function dengan parameter 'denganLoading'
+     * Jika true (saat pertama load), tampilkan tulisan loading.
+     * Jika false (saat auto-refresh), update data diam-diam di background.
      */
-    async function muatData() {
-
-      tampilkanLoading();
+    async function muatData(denganLoading = true) {
+      const badge = document.getElementById('statusBadge');
+      
+      if (denganLoading) {
+        tampilkanLoading();
+      } else {
+        // Efek visual ringan saat silent refresh berlangsung
+        if (badge) {
+          badge.innerText = "Memperbarui...";
+          badge.className = "text-[10px] bg-amber-100 text-amber-600 px-3 py-1 rounded-full font-bold";
+        }
+      }
 
       try {
-
         const data = await ambilData();
-
         renderStatistik(data);
-
         renderRingkasan(data);
-
         updateWaktu();
+        
+        // Kembalikan status badge ke terupdate
+        if (badge) {
+          badge.innerText = "Terupdate";
+          badge.className = "text-[10px] bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full font-bold";
+        }
+        // Munculkan tombol refresh setelah load pertama sukses
+        document.getElementById('btnRefresh').classList.remove('hidden');
 
       } catch (err) {
-
         console.error(err);
-
-        tampilkanError(err.message);
+        // Jika silent refresh gagal, kita infokan di badge tanpa merusak data yang sudah tampil
+        if (!denganLoading && badge) {
+          badge.innerText = "Gagal Memperbarui";
+          badge.className = "text-[10px] bg-red-100 text-red-600 px-3 py-1 rounded-full font-bold";
+        } else {
+          tampilkanError(err.message);
+        }
       }
     }
 
-    /**
-     * Load pertama
-     */
     window.onload = () => {
+      // Jalankan pertama kali dengan layar loading
+      muatData(true);
 
-      muatData();
-
-      /**
-       * Auto refresh tiap 1 menit
-       */
-      setInterval(muatData, 60000);
+      // Jalankan setiap 60 detik di background (tanpa layar loading)
+      setInterval(() => {
+        muatData(false);
+      }, 60000);
     };
   </script>
 
