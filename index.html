@@ -27,8 +27,9 @@
       transition: all 0.3s ease;
     }
 
+    /* DIUBAH: Mengurangi max-height dari 600px ke 380px agar pas menampilkan sekitar 2 minggu saja, sisanya scroll */
     .summary-area {
-      max-height: 600px;
+      max-height: 380px;
       overflow-y: auto;
     }
 
@@ -120,7 +121,8 @@
         </span>
       </div>
 
-      <div id="ringkasanNama" class="summary-area p-5 space-y-6">
+      <!-- Di sini area list dibatasi tingginya melalui kelas .summary-area di atas -->
+      <div id="ringkasanNama" class="summary-area p-5 space-y-4 bg-slate-50/50">
         <div class="text-center py-8 text-slate-400 italic text-sm animate-pulse">
           Menghubungkan ke server Google...
         </div>
@@ -185,7 +187,6 @@
       }
     }
 
-    // Mengkalkulasi statistik berdasarkan kata kunci pencarian nama
     function renderStatistik(data, kataKunci = "") {
       let total = 0;
       let jumlahTransaksi = 0;
@@ -193,7 +194,6 @@
 
       if (data && Array.isArray(data.riwayat)) {
         if (query === "") {
-          // Kasus 1: Tidak mencari nama, tampilkan total semua orang
           data.riwayat.forEach(item => {
             total += Number(item.jumlah || 0);
           });
@@ -201,7 +201,6 @@
           document.getElementById('labelTotal').innerText = "Total Tabungan";
           document.getElementById('labelTransaksi').innerText = "Jumlah Transaksi";
         } else {
-          // Kasus 2: Ada pencarian nama, hitung total orang yang dicari saja dari data mentah riwayat
           data.riwayat.forEach(item => {
             if (String(item.nama || '').toLowerCase().includes(query)) {
               total += Number(item.jumlah || 0);
@@ -239,7 +238,7 @@
                     ${escapeHTML(group.minggu || '-')}
                   </h3>
                   <span class="text-[10px] text-slate-400 font-bold">
-                    ${detailTersaring.length} ANGGOTA
+                    ${detailTersaring.length} ANGGOTA COCOK
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -313,7 +312,6 @@
 
         const kataKunciAktif = document.getElementById('inputCariNama').value;
         
-        // Sekarang fungsi statistik juga membaca kata kunci aktif
         renderStatistik(data, kataKunciAktif);
         renderRingkasan(data, kataKunciAktif);
         
